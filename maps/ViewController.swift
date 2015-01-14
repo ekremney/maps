@@ -19,50 +19,34 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let lat = NSString(string: places[activePlace]["lat"]!).doubleValue
-        let lon = NSString(string: places[activePlace]["lon"]!).doubleValue
-        
-        var latitude:CLLocationDegrees = lat
-        var longitute:CLLocationDegrees = lon
-        var latDelta:CLLocationDegrees = 0.01
-        var lonDelta:CLLocationDegrees = 0.01
-        
-        var span:MKCoordinateSpan = MKCoordinateSpanMake(latDelta, lonDelta)
-        var location:CLLocationCoordinate2D = CLLocationCoordinate2DMake(latitude, longitute)
-        var region:MKCoordinateRegion = MKCoordinateRegionMake(location, span)
-        
-        myMap.setRegion(region, animated: true)
-
-        annotationY.coordinate = location
-        annotationY.title = places[activePlace]["name"]
-        
-        myMap.addAnnotation(annotationY)
-        
-
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
         
-        
-        /*
-        var latitude:CLLocationDegrees = 40.748655
-        var longitute:CLLocationDegrees = -73.985621
-        var latDelta:CLLocationDegrees = 0.01
-        var lonDelta:CLLocationDegrees = 0.01
-        
-        var span:MKCoordinateSpan = MKCoordinateSpanMake(latDelta, lonDelta)
-        var location:CLLocationCoordinate2D = CLLocationCoordinate2DMake(latitude, longitute)
-        var region:MKCoordinateRegion = MKCoordinateRegionMake(location, span)
-        
-        myMap.setRegion(region, animated: true)
-        
-        var annotation = MKPointAnnotation()
-        
-        annotation.coordinate = location
-        annotation.title = "Empire State Building"
-        annotation.subtitle = "This is subtitle"
-        
-        myMap.addAnnotation(annotation)
-        */
+        if activePlace == -1 {
+            manager.requestAlwaysAuthorization()
+            manager.startUpdatingLocation()
+        }
+        else {
+            let lat = NSString(string: places[activePlace]["lat"]!).doubleValue
+            let lon = NSString(string: places[activePlace]["lon"]!).doubleValue
+            
+            var latitude:CLLocationDegrees = lat
+            var longitute:CLLocationDegrees = lon
+            var latDelta:CLLocationDegrees = 0.01
+            var lonDelta:CLLocationDegrees = 0.01
+            
+            var span:MKCoordinateSpan = MKCoordinateSpanMake(latDelta, lonDelta)
+            var location:CLLocationCoordinate2D = CLLocationCoordinate2DMake(latitude, longitute)
+            var region:MKCoordinateRegion = MKCoordinateRegionMake(location, span)
+            
+            myMap.setRegion(region, animated: true)
+
+            annotationY.coordinate = location
+            annotationY.title = places[activePlace]["name"]
+            
+            myMap.addAnnotation(annotationY)
+        }
+
         var uilpgr = UILongPressGestureRecognizer(target: self, action: "action:")
         uilpgr.minimumPressDuration = 2.0
         myMap.addGestureRecognizer(uilpgr)
@@ -76,19 +60,54 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     
     func action(gestureRecognizer:UIGestureRecognizer) {
         if (gestureRecognizer.state == UIGestureRecognizerState.Began) {
+            myMap.removeAnnotation(annotationY)
             // annotation code
             // this will be run only once by long press
 
             var touchPoint = gestureRecognizer.locationInView(self.myMap)
             var newCoordinate:CLLocationCoordinate2D = myMap.convertPoint(touchPoint, toCoordinateFromView: self.myMap)
+            
+            var loc = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
         
-            var newAnnotation = MKPointAnnotation()
+            CLGeocoder().reverseGeocodeLocation(loc, completionHandler: { (placemarks, error) -> Void in
+                if error != nil {
+                    println("Error: \(error)")
+                }
+                else {
+                    let p = CLPlacemark(placemark: placemarks[0] as CLPlacemark)
+                    var subThoroughFare:String
+                    var thoroughFare:String
+                    
+                    if p.subThoroughfare != nil {
+                        subThoroughFare = p.subThoroughfare
+                    }
+                    else {
+                        subThoroughFare = ""
+                    }
+                    
+                    if p.thoroughfare != nil {
+                        thoroughFare = p.thoroughfare
+                    }
+                    else {
+                        thoroughFare = ""
+                    }
+                    
+                    var title = "\(subThoroughFare) \(thoroughFare)"
+                    
+                    if title == " " {
+                        var nsdate = NSDate()
+                        var date = NSDate.dateByAddingTimeInterval(nsdate)
+                        title = "added: \(date)"
+                    }
+                    
+                    self.annotationY.coordinate = newCoordinate
+                    self.annotationY.title = title
+                    
+                    places.append(["name":title, "lat": "\(newCoordinate.latitude)", "lon":"\(newCoordinate.longitude)"])
+                }
+            })
         
-            newAnnotation.coordinate = newCoordinate
-            newAnnotation.title = "Empire State Building"
-            newAnnotation.subtitle = "This is subtitle"
-        
-            myMap.addAnnotation(newAnnotation)
+            myMap.addAnnotation(annotationY)
         }
     }
     
@@ -110,8 +129,7 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         manager.stopUpdatingLocation()
         
         annotationY.coordinate = location
-        annotationY.title = "you're here"
-        annotationY.subtitle = "This is subtitle"
+        annotationY.title = "You're Here!"
         
         myMap.addAnnotation(annotationY)
         
@@ -120,6 +138,12 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     
     func locationManager(manager: CLLocationManager!, didFailWithError error: NSError!) {
         println("location error: \(error)")
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "backToPlaces" {
+            self.navigationController?.navigationBarHidden = false
+        }
     }
 
     override func didReceiveMemoryWarning() {

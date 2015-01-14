@@ -20,7 +20,11 @@
                                 <rect key="frame" x="0.0" y="20" width="320" height="44"/>
                                 <items>
                                     <navigationItem title="My Map" id="ySs-t6-utY">
-                                        <barButtonItem key="leftBarButtonItem" title="Back" id="ZLX-lv-E2t"/>
+                                        <barButtonItem key="leftBarButtonItem" title="Back" id="ZLX-lv-E2t">
+                                            <connections>
+                                                <segue destination="PP2-EH-3qw" kind="show" identifier="backToPlaces" id="Sc8-ES-cRw"/>
+                                            </connections>
+                                        </barButtonItem>
                                         <barButtonItem key="rightBarButtonItem" title="Find Me" id="NmA-7h-HCT">
                                             <connections>
                                                 <action selector="findMePressed:" destination="vXZ-lx-hvc" id="eh3-yj-iUZ"/>
@@ -69,7 +73,11 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="My Places" id="mHR-SR-uKL">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="day-BR-Yeg"/>
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="day-BR-Yeg">
+                            <connections>
+                                <segue destination="vXZ-lx-hvc" kind="show" identifier="addPlace" id="6nV-iW-DwC"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
@@ -102,4 +110,7 @@
             <point key="canvasLocation" x="1424" y="291"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="6nV-iW-DwC"/>
+    </inferredMetricsTieBreakers>
 </document>

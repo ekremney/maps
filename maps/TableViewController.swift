@@ -23,11 +23,10 @@ class TableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
         if places.count == 1 {
-            places.removeAtIndex(0)
+            if places[0]==[:]{
+                places.removeAll(keepCapacity: false)
+            }
         }
-        
-        places.append(["name":"Taj Mahal", "lat":"27.175325", "lon":"78.042150"])
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -57,11 +56,19 @@ class TableViewController: UITableViewController {
         return cell
     }
     
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "addPlace" {
+            activePlace = -1
+        }
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.navigationBarHidden = true
+    }
+    
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         
         activePlace = indexPath.row
-        
-        self.navigationController?.navigationBarHidden = true
         self.performSegueWithIdentifier("findPlace", sender: indexPath)
     }
 
